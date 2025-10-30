@@ -42,18 +42,30 @@ def Hohman_transfert():
     T_wait = (phi_i - phi_f ) / (omega_i - omega_f)  # Temps d'attente avant l'injection
 
     t_impulsion = (m_fuel / m_debit)  # Durée de l'impulsion de poussée
+    
+    "on voit qu'on a un temps d'impulsion très court par rapport au temps de transfert, "
+
+    "Partie 2: Deorbit maneuver "
+    #Compute the propellant required to do a deorbit maneuver at 300km using a Hohmann transfer with a perigee at 10Km
+    Ra = 300e3 + R_e
+    Rp = 10e3 + R_e
+    
+    Dv_a2 = np.sqrt(K / Ra) * (1 - np.sqrt(2 /(1+Ra/Rp)))
+    Dv = Dv_a
+    m_final2 = M_tot / (np.exp( Dv / (I_sp * g) )) # Masse finale après consommation de carburant
+    m_fuel2 = M_tot - m_final2  # Masse de carburant consommée
+
+    #Compute the velocity and flight path angle of the capsule at re-entry assuming a re-entry point at 122km.
+    h = 122e3
+    re = h + R_e
+    gamma_e = -6.2
+
+    v_e = h / (re * np.cos(gamma_e))
 
 
-    return t,a ,e, Dv_p, Dv_a, Dv_p + Dv_a, m_fuel, T_wait, t_impulsion
+    return Dv_a2, m_fuel2, m_final2, v_e
 
-t, a, e, Dv_p, Dv_a, Dv_tot, m_fuel, T_wait, t_impulsion = Hohman_transfert()
+Dv_a2, m_fuel2, m_final2, v_e = Hohman_transfert()
 
-print(f"Temps de transfert: {t/60:.2f} minutes")
-print(f"Demi-grand axe: {a/1e3:.2f} km")
-print(f"Excentricité: {e:.4f}")
-print(f"Delta-v au périgée: {Dv_p:.2f} m/s")
-print(f"Delta-v à l'apogée: {Dv_a:.2f} m/s")
-print(f"Delta-v total: {Dv_tot:.2f} m/s")
-print(f"Masse de carburant consommée: {m_fuel:.2f} kg")
-print(f"Temps d'attente avant l'injection: {T_wait/60**2:.2f} heures")
-print(f"Temps d'impulsion: {t_impulsion:.2f} s")
+print(Dv_a2, m_fuel2, m_final2, v_e)
+

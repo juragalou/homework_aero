@@ -1,4 +1,8 @@
 import numpy as np
+from scipy.integrate import solve_ivp
+import matplotlib.pyplot as plt
+
+
 
 """donné initial """
 
@@ -12,9 +16,11 @@ T = 15.83e3  # Poussée du moteur en Newtons
 I_sp = 266  # Impulsion spécifique en secondes
 D = 2.3  # Diamètre du module en mètres
 phi_i = 60 * (np.pi / 180)  # Angle initial en radians
+R = 287.15 
 
 def Hohman_transfert():
-    """Calcul des paramètres de transfert de Hohmann entre une orbite à 200km  et 300km."""
+
+    "Partie 1: Space maneuver (service + reentry modules)"
     K = g * R_e**2  # Constante gravitationnelle terrestre
 
     Rp = R_e + 200e3  # Rayon de l'orbite initiale en mètres
@@ -45,6 +51,8 @@ def Hohman_transfert():
     
     "on voit qu'on a un temps d'impulsion très court par rapport au temps de transfert, "
 
+#-----------------------------------------
+
     "Partie 2: Deorbit maneuver "
     #Compute the propellant required to do a deorbit maneuver at 300km using a Hohmann transfer with a perigee at 10Km
     Ra = 300e3 + R_e
@@ -58,12 +66,20 @@ def Hohman_transfert():
     #Compute the velocity and flight path angle of the capsule at re-entry assuming a re-entry point at 122km.
     h = 122e3
     re = h + R_e
-    gamma_e = -6.2
+    gamma_e = -6.2 #flight path angle est donné dans les slides et doit etre compris entre 5.5° et 6.9°
 
     v_e = h / (re * np.cos(gamma_e))
 
+#---------------------------------------------------------
+
+    "Partie 3: Flight path entry (reentry module only)"
+
+
+
 
     return Dv_a2, m_fuel2, m_final2, v_e
+
+
 
 Dv_a2, m_fuel2, m_final2, v_e = Hohman_transfert()
 

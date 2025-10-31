@@ -18,6 +18,7 @@ D = 2.3  # Diamètre du module en mètres
 phi_i = 60 * (np.pi / 180)  # Angle initial en radians
 R = 287.15 
 
+
 def Hohman_transfert():
 
     "Partie 1: Space maneuver (service + reentry modules)"
@@ -55,33 +56,115 @@ def Hohman_transfert():
 
     "Partie 2: Deorbit maneuver "
     #Compute the propellant required to do a deorbit maneuver at 300km using a Hohmann transfer with a perigee at 10Km
-    Ra = 300e3 + R_e
-    Rp = 10e3 + R_e
+    Ra2 = 300e3 + R_e
+    Rp2 = 10e3 + R_e
+
+    a2 = (Rp2 + Ra2) / 2 
     
-    Dv_a2 = np.sqrt(K / Ra) * (1 - np.sqrt(2 /(1+Ra/Rp)))
-    Dv = Dv_a
+    Dv_a2 = np.sqrt(K / Ra2) * (1 - np.sqrt(2 /(1+Ra2/Rp2))) #delta de desorbitation
+    Dv = Dv_a2
+
     m_final2 = M_tot / (np.exp( Dv / (I_sp * g) )) # Masse finale après consommation de carburant
     m_fuel2 = M_tot - m_final2  # Masse de carburant consommée
 
     #Compute the velocity and flight path angle of the capsule at re-entry assuming a re-entry point at 122km.
     h = 122e3
     re = h + R_e
-    gamma_e = -6.2 #flight path angle est donné dans les slides et doit etre compris entre 5.5° et 6.9°
+    #gamma_e = np.deg2rad(-6.2) #flight path angle  doit etre compris entre 5.5° et 6.9°
 
-    v_e = h / (re * np.cos(gamma_e))
+
+
+    va = np.sqrt(K * (2/Ra2 - 1/a2)) #vitesse à l'apogée 
+    h_spec = Ra2 * va
+    ve = np.sqrt(va**2 + 2*K*(1/re - 1/Ra2)) #vitesse au point d'entrée 
+    gamma_e = -np.arccos(h_spec / (re * ve)) #flight path angle 
+    gamma = np.rad2deg(gamma_e)
+
+
+
+
+
 
 #---------------------------------------------------------
 
     "Partie 3: Flight path entry (reentry module only)"
+    #Assuming a ballistic entry with the evolution of density in 3.a, and
+    #using the initial conditions from question 2.b, plot the velocity
+    #from reentry point with respect to altitude up to h=40km and the
+    #deceleration (g loads) faced by the pilot. Mention in the report
+    #values for 80, 60 and 40 km.
+
+    h_40 = np.linspace(122e3, 40e3, 100)
+    h_60 = np.linspace(122e3, 60e3, 100)
+    h_80 = np.linspace(122e3, 80e3, 100)
+
+    S = np.pi * (D/2)**2
+    C_B = 2460 / (S * C_d) 
+
+    rho_h = rho * np.exp(-0.1378e-3 * h_40)
+
+
+    v_40= ve * np.exp((rho * (np.exp(-0.1378e-3* h_40)-np.exp(-0.1378e-3 * 122e3)))/(2*0.1378e-3*C_B*np.sin(gamma_e)))
+    v_60 = ve * np.exp((rho * (np.exp(-0.1378e-3* h_60)-np.exp(-0.1378e-3 * 122e3)))/(2*0.1378e-3*C_B*np.sin(gamma_e)))
+    v_80 = ve * np.exp((rho * (np.exp(-0.1378e-3* h_80)-np.exp(-0.1378e-3 * 122e3)))/(2*0.1378e-3*C_B*np.sin(gamma_e)))
+
+    # F = m a --> F = trainée 
+
+    Drag = 0.5 * rho_h * v_40 **2 * S * C_d
+
+    acc = Drag / (2460 * g) 
+
+    Q = 1.74e-4 * np.square((rho_h * v_40**3)/(D/2))
+
+    plt.figure(figsize=(8,6))
+    plt.plot(h_80/1e3, v_80/1e3,   linewidth=8, label="jusqu'à 80 km")
+    plt.plot(h_60/1e3, v_60/1e3, linewidth=4, label="jusqu'à 60 km")
+    plt.plot(h_40/1e3, v_40/1e3, linewidth=2, label="jusqu'à 40 km")
+
+    plt.gca().invert_xaxis()
+    plt.xlabel("Altitude h (km)")
+    plt.ylabel("Vitesse v (km/s)")
+    plt.title("Rentrée balistique : vitesse en fonction de l’altitude")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.show()
+
+    plt.figure(figsize=(8,6))
+    plt.plot(h_40/1e3, acc, label= "acceleration")
+
+    plt.gca().invert_xaxis()
+    plt.xlabel("Altitude h (km)")
+    plt.ylabel("g-loads")
+    plt.title("Rentrée balistique : deceleration en fonction de l’altitude")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.show()
+
+    plt.figure(figsize=(8,6))
+    plt.plot(h_40/1e3, Q, label= "heat flux ")
+
+    plt.gca().invert_xaxis()
+    plt.xlabel("Altitude h (km)")
+    plt.ylabel("heat flux")
+    plt.title("Rentrée balistique : flux de chaleur en fonction de l’altitude")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.show()
 
 
 
 
-    return Dv_a2, m_fuel2, m_final2, v_e
+    return Q
 
 
 
-Dv_a2, m_fuel2, m_final2, v_e = Hohman_transfert()
 
-print(Dv_a2, m_fuel2, m_final2, v_e)
+    
+
+
+
+print(Hohman_transfert())
 

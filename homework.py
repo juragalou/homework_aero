@@ -1,6 +1,7 @@
 import numpy as np
-from scipy.integrate import solve_ivp
+from scipy.integrate import simpson
 import matplotlib.pyplot as plt
+
 
 
 
@@ -116,6 +117,9 @@ def Hohman_transfert():
 
     Q = 1.74e-4 * np.square((rho_h * v_40**3)/(D/2))
 
+    I = simpson(-Q/(acc*g), v_40)#integre Q par rapport a V avec le changement de variable dt = dV/a(V)
+    I1 = simpson(Q/(v_40 * np.sin(gamma_e)),h_40) #integre Q par rapport a h avec le changement de variable dt = dh/(V *sin(gamma_e))
+    
     plt.figure(figsize=(8,6))
     plt.plot(h_80/1e3, v_80/1e3,   linewidth=8, label="jusqu'à 80 km")
     plt.plot(h_60/1e3, v_60/1e3, linewidth=4, label="jusqu'à 60 km")
@@ -157,7 +161,7 @@ def Hohman_transfert():
 
 
 
-    return Q
+    return I, I1
 
 
 
